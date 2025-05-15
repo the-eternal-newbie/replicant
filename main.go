@@ -3,14 +3,27 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 
 	"replicant/replicant"
 )
 
 func main() {
-	replicant.InitDB("data/memory.db")
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("⚠️  No .env file found or couldn't load it")
+	}
+
+	dbPath := os.Getenv("REPLICANT_DB")
+	if dbPath == "" {
+		dbPath = "data/memory.db"
+	}
+
+	replicant.InitDB(dbPath)
 	defer replicant.CloseDB()
 
 	reader := bufio.NewReader(os.Stdin)
