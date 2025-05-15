@@ -3,7 +3,9 @@ package replicant
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 )
 
 type OllamaRequest struct {
@@ -17,14 +19,24 @@ type OllamaResponse struct {
 }
 
 func QueryLLM(prompt string) (string, error) {
+	host := os.Getenv("OLLAMA_HOST")
+	if host == "" {
+		host = "http://localhost:11434"
+	}
+
+	model := os.Getenv("OLLAMA_MODEL")
+	if model == "" {
+		model = "mistral"
+	}
+
 	payload := OllamaRequest{
-		Model:  "mistral", // or any model loaded in Ollama
+		Model:  model,
 		Prompt: prompt,
 		Stream: false,
 	}
 
 	data, _ := json.Marshal(payload)
-	resp, err := http.Post("http://localhost:11434/api/generate", "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(fmt.Sprintf("%s/api/generate", host), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return "", err
 	}

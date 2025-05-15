@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    entrypoint: ["/bin/sh", "-c", "/app/ollama-entrypoint.sh"]
+    working_dir: /app
+    volumes:
+      - ./ollama-entrypoint.sh:/app/ollama-entrypoint.sh:ro
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  replicant:
+    build: .
+    container_name: replicant
+    depends_on:
+      - ollama
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
+      - ./.env:/.env
+    restart: unless-stopped
+    env_file:
+      - .env
+
+volumes:
+  ollama_data:
